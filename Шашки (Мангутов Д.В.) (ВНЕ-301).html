@@ -1,0 +1,314 @@
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<body bgcolor=#7CFC00 text=#FF7F00 link="#FF0000">
+<p>Работу выполнил:
+<p>Студент группы ВНЕ-301 
+<p>Мангутов Д.В.
+</head>
+<div>
+<script>
+function preload() {
+this.length = preload.arguments.length;
+for (var a = 0; a < this.length; a++) {
+this[a] = new Image();
+this[a].src = preload.arguments[a];}}
+var pics = new preload("black.gif","white.gif",
+"white1.gif","white2.gif","you1k.gif","white2k.gif",
+"black1.gif","black2.gif","me1k.gif","black2k.gif");
+var black = -1; var white = 1; var square_dim = 45; var piece_toggled = false; var my_turn = false;
+var double_jump = false; var comp_move = false; var game_is_over = false; var safe_from = safe_to = null;
+var toggler = null;var togglers = 0;
+function Board() {
+board = new Array();
+for (var a=0;a<8; a++) {
+board[a] = new Array();
+for (var b=0;b<8;b++)
+board[a][b] = Board.arguments[8*b+a];}
+board[-2] = new Array();
+board[-1] = new Array(); 
+board[8] = new Array(); 
+board[9] = new Array(); }
+var board;
+Board(1,0,1,0,1,0,1,0,0,1,0,1,0,1,0,1,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,-1,0,-1,0,-1,0,-1,-1,0,-1,0,-1,0,-1,0,0,-1,0,-1,0,-1,0,-1);
+function message(str) {
+if (!game_is_over)
+document.disp.message.value = str;}
+function moveable_space(a,b) {
+return (((a%2)+b)%2 == 0);}
+function Coord(i,j) {
+this.i = i;
+this.j = j;}
+function coord(i,j) {
+c = new Coord(i,j);
+return c;}
+document.write("<table border=0 cellspacing=0 cellpadding=0 width="+(square_dim*8+8)
++"<tr><td><img src='black.gif' width="+(square_dim*8+8)
++" height=4><br></td></tr>");
+for(var b=0;b<8;b++) {
+document.write("<tr><td><img src='black.gif' width=4 height="+square_dim+">");
+for(var a=0;a<8;a++) {
+if (moveable_space(a,b))
+document.write("<a href='javascript:clicked("+a+","+b+")'>");
+document.write("<img src='");
+if (board[a][b]==1) document.write("white1.gif");
+else if (board[a][b]==-1) document.write("black1.gif");
+else if (moveable_space(a,b)) document.write("white.gif");
+else document.write("black.gif");
+document.write("' width="+square_dim+" height="+square_dim
++" name='space"+a+""+b+"' border=0>");
+if (moveable_space(a,b)) document.write("</a>");}
+document.write("<img src='black.gif' width=4 height="+square_dim+"></td></tr>");}
+document.write("<tr><td><img src='black.gif' width="+(square_dim*8+8)
++" height=4><br></td></tr></table><br>"
++"<form name='disp'><input type=text readonly style='border-style:solid; border-width:0;' size=40 name='message' value=''><br><br><input type=button value=\" Играть сначала \" onClick=\"location.href+=''\" style=\"font-weight: bold\"></form>");
+function clicked(a,b) {
+if (my_turn) {
+if (integ(board[a][b])==1) toggle(a,b);
+else if (piece_toggled) move(selected,coord(a,b));
+}}
+function toggle(i,j) {
+if (my_turn) {
+if (piece_toggled)
+draw(selected.i,selected.j,"white1"+((board[selected.i][selected.j]==1.1)?"k":"")+".gif");
+if (piece_toggled && (selected.i == i) && (selected.j == j)) {
+piece_toggled = false;
+if (double_jump) { my_turn = double_jump = false; computer(); } } else {
+piece_toggled = true;
+draw(i,j,"white2"+((board[i][j]==1.1)?"k":"")+".gif");}
+selected = coord(i,j); } else {
+if ((piece_toggled) && (integ(board[selected_c.i][selected_c.j])==-1))
+draw(selected_c.i,selected_c.j,"black1"+((board[selected_c.i][selected_c.j]==-1.1)?"k":"")+".gif");
+if (piece_toggled && (selected_c.i == i) && (selected_c.j == j)) {
+piece_toggled = false; } else {
+piece_toggled = true;
+draw(i,j,"black2"+((board[i][j]==-1.1)?"k":"")+".gif");}
+selected_c = coord(i,j);}}
+function draw(i,j,name) {
+document.images["space"+i+""+j].src = name;}
+function integ(cx) {
+if (cx != null)
+return Math.round(cx);
+else
+return null;}
+function abs(cx) {
+return Math.abs(cx);}
+function sign(cx) {
+if (cx < 0) return -1;
+else return 1;}
+function concatenate(arr1,arr2) {
+for(var a=0;a<arr2.length;a++)
+arr1[arr1.length+a] = arr2[a];
+return arr1;}
+function legal_move(from,to) {
+if ((to.i < 0) || (to.j < 0) || (to.i > 7) || (to.j > 7)) return false;
+piece = board[from.i][from.j];
+distance = coord(to.i-from.i,to.j-from.j);
+if ((distance.i == 0) || (distance.j == 0)) {
+return false;}
+if (abs(distance.i) != abs(distance.j)) {
+return false;}
+if (abs(distance.i) > 2) {
+return false;}
+if ((abs(distance.i) == 1) && double_jump) {
+return false;}
+if ((board[to.i][to.j] != 0) || (piece == 0)) {
+return false;}
+if ((abs(distance.i) == 2)
+&& (integ(piece) != -integ(board[from.i+sign(distance.i)][from.j+sign(distance.j)]))) {
+return false;}
+if ((integ(piece) == piece) && (sign(piece) != sign(distance.j))) {
+return false;}
+return true;}
+function move(from,to) {
+my_turn = true;
+if (legal_move(from,to)) {
+piece = board[from.i][from.j];
+distance = coord(to.i-from.i,to.j-from.j);
+if ((abs(distance.i) == 1) && (board[to.i][to.j] == 0)) {
+swap(from,to);
+} else if ((abs(distance.i) == 2)
+&& (integ(piece) != integ(board[from.i+sign(distance.i)][from.j+sign(distance.j)]))) {
+double_jump = false;
+swap(from,to);
+remove(from.i+sign(distance.i),from.j+sign(distance.j));
+if ((legal_move(to,coord(to.i+2,to.j+2)))
+|| (legal_move(to,coord(to.i+2,to.j-2)))
+|| (legal_move(to,coord(to.i-2,to.j-2)))
+|| (legal_move(to,coord(to.i-2,to.j+2)))) {
+double_jump = true;}}
+if ((board[to.i][to.j] == 1) && (to.j == 7)) king_me(to.i,to.j);
+selected = to;
+if (game_over() && !double_jump) {
+setTimeout("toggle("+to.i+","+to.j+");my_turn = double_jump = false;computer();",1000);}}
+return true;}
+function king_me(i,j) {
+if (board[i][j] == 1) {
+board[i][j] = 1.1; 
+draw(i,j,"white2k.gif");
+} else if (board[i][j] == -1) {
+board[i][j] = -1.1;
+draw(i,j,"black2k.gif");}}
+function swap(from,to) {
+if (my_turn || comp_move) {
+dummy_src = document.images["space"+to.i+""+to.j].src;
+document.images["space"+to.i+""+to.j].src = document.images["space"+from.i+""+from.j].src;
+document.images["space"+from.i+""+from.j].src = dummy_src;}
+dummy_num = board[from.i][from.j];
+board[from.i][from.j] = board[to.i][to.j];
+board[to.i][to.j] = dummy_num;}
+function remove(i,j) {
+if (my_turn || comp_move)
+draw(i,j,"white.gif");
+board[i][j] = 0;}
+function Result(val) {
+this.high = val;
+this.dir = new Array();}
+function move_comp(from,to) {
+toggle(from.i,from.j);
+comp_move = true;
+swap(from,to);
+if (abs(from.i-to.i) == 2) {
+remove(from.i+sign(to.i-from.i),from.j+sign(to.j-from.j));}
+if ((board[to.i][to.j] == -1) && (to.j == 0)) king_me(to.i,to.j);
+setTimeout("selected_c = coord("+to.i+","+to.j+");piece_toggled = true;",900);
+setTimeout("bak=my_turn;my_turn=false;toggle("+to.i+","+to.j+");my_turn=bak;",1000);
+if (game_over()) {
+setTimeout("comp_move = false;my_turn = true;togglers=0;",600);}
+return true;}
+function game_over() {
+comp = you = false;
+for(var a=0;a<8;a++) {
+for(var b=0;b<8;b++) {
+if(integ(board[a][b]) == -1) comp = true;
+if(integ(board[a][b]) == 1) you = true;}}
+if (!you) message("Вы проиграли!");
+game_is_over = (!comp || !you)
+return (!game_is_over);}
+var jump_priority = 10;
+function computer() {
+for(var b=0;b<8;b++) {
+for(var a=0;a<8;a++) {
+if (integ(board[a][b]) == 1) {
+if ((legal_move(coord(a,b),coord(a+2,b+2))) && (prevent(coord(a+2,b+2),coord(a+1,b+1)))) {
+return true;
+} if ((legal_move(coord(a,b),coord(a-2,b+2))) && (prevent(coord(a-2,b+2),coord(a-1,b+1)))) {
+return true;}
+} if (board[a][b] == 1.1) {
+if ((legal_move(coord(a,b),coord(a-2,b-2))) && (prevent(coord(a-2,b-2),coord(a-1,b-1)))) {
+return true;
+} if ((legal_move(coord(a,b),coord(a+2,b-2))) && (prevent(coord(a+2,b-2),coord(a+1,b-1)))) {
+return true;}}}}
+for(var b=7;b>=0;b--) {
+for(var a=0;a<8;a++) {
+if (jump(a,b))
+return true;}}
+safe_from = null;
+for(var b=0;b<8;b++) {
+for(var a=0;a<8;a++) {
+if (single(a,b))
+return true;}}
+if (safe_from != null) {
+move_comp(safe_from,safe_to); } else {
+message("Вы выграли!");
+game_is_over = true;}
+safe_from = safe_to = null;
+return false;}
+function jump(a,b) {
+if (board[a][b] == -1.1) { 
+if (legal_move(coord(a,b),coord(a+2,b+2))) {
+move_comp(coord(a,b),coord(a+2,b+2));
+setTimeout("jump("+(a+2)+","+(b+2)+");",500);
+return true;
+} if (legal_move(coord(a,b),coord(a-2,b+2))) {
+move_comp(coord(a,b),coord(a-2,b+2));
+setTimeout("jump("+(a-2)+","+(b+2)+");",500);
+return true;}
+} if (integ(board[a][b]) == -1) {
+if (legal_move(coord(a,b),coord(a-2,b-2))) {
+move_comp(coord(a,b),coord(a-2,b-2));
+setTimeout("jump("+(a-2)+","+(b-2)+");",500);
+return true;
+} if (legal_move(coord(a,b),coord(a+2,b-2))) {
+move_comp(coord(a,b),coord(a+2,b-2));
+setTimeout("jump("+(a+2)+","+(b-2)+");",500);
+return true;}}
+return false;}
+function single(a,b) {
+if (board[a][b] == -1.1) {
+if (legal_move(coord(a,b),coord(a+1,b+1))) {
+safe_from = coord(a,b);
+safe_to = coord(a+1,b+1);
+if (wise(coord(a,b),coord(a+1,b+1))) {
+move_comp(coord(a,b),coord(a+1,b+1));
+return true;}
+} if (legal_move(coord(a,b),coord(a-1,b+1))) {
+safe_from = coord(a,b);
+safe_to = coord(a-1,b+1);
+if (wise(coord(a,b),coord(a-1,b+1))) {
+move_comp(coord(a,b),coord(a-1,b+1));
+return true;}}
+} if (integ(board[a][b]) == -1) {
+if (legal_move(coord(a,b),coord(a+1,b-1))) {
+safe_from = coord(a,b);
+safe_to = coord(a+1,b-1);
+if (wise(coord(a,b),coord(a+1,b-1))) {
+move_comp(coord(a,b),coord(a+1,b-1));
+return true;}
+} if (legal_move(coord(a,b),coord(a-1,b-1))) {
+safe_from = coord(a,b);
+safe_to = coord(a-1,b-1);
+if (wise(coord(a,b),coord(a-1,b-1))) {
+move_comp(coord(a,b),coord(a-1,b-1));
+return true;}}}
+return false;}
+function possibilities(i,j) {
+if (!jump(i,j))
+if (!single(i,j))
+return true;
+else
+return false;
+else
+return false;}
+function prevent(end,s) {
+a = end.i;
+b = end.j;
+if (!possibilities(s.i,s.j))
+return true;
+else if ((integ(board[a-1][b+1])==-1) && (legal_move(coord(a-1,b+1),coord(a,b)))) {
+return move_comp(coord(a-1,b+1),coord(a,b));
+} else if ((integ(board[a+1][b+1])==-1) && (legal_move(coord(a+1,b+1),coord(a,b)))) {
+return move_comp(coord(a+1,b+1),coord(a,b));
+} else if ((board[a-1][b-1]==-1.1) && (legal_move(coord(a-1,b-1),coord(a,b)))) {
+return move_comp(coord(a-1,b-1),coord(a,b));
+} else if ((board[a+1][b-1]==-1.1) && (legal_move(coord(a+1,b-1),coord(a,b)))) {
+return move_comp(coord(a+1,b-1),coord(a,b));
+} else {
+return false;}}
+function wise(from,to) {
+a = to.i;
+b = to.j;
+n = (b>0);
+s = (b<7);
+e = (a<7);
+w = (a>0);
+if (n&&e) ne = board[a+1][b-1]; else ne = null;
+if (n&&w) nw = board[a-1][b-1]; else nw = null;
+if (s&&e) se = board[a+1][b+1]; else se = null;
+if (s&&w) sw = board[a-1][b+1]; else sw = null;
+eval(((b-from.j != 1)?"s":"n")+((a-from.i != 1)?"e":"w")+"=0;");
+if ((sw==0) && (integ(ne)==1)) return false;
+if ((se==0) && (integ(nw)==1)) return false;
+if ((nw==0) && (se==1.1)) return false;
+if ((ne==0) && (sw==1.1)) return false;
+return true;
+}
+message("Ваш цвет белый.");
+my_turn = true;
+var ie4 = (document.all) ? true : false; var nn4 = (document.layers) ? true : false;
+</script>
+
+ 
+</div>
+</body>
+</html>
